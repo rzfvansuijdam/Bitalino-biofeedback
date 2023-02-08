@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +15,8 @@ public class Controller : MonoBehaviour
     public int samplingRate;
     public int resolution = 8;
     public Text OutputMsgText;
-
+    public Slider SliderSlider;
+    public Image image;
     private int BitalinoPID = 1538;
     
     [System.NonSerialized]
@@ -24,6 +26,16 @@ public class Controller : MonoBehaviour
     void Start()
     {
         StartConnection();
+    }
+
+    private void Update()
+    {
+        print(SliderSlider.value);
+        if (SliderSlider.value >= 0.2f)
+        {
+            image.color = Color.red;
+        }
+        else { image.color = Color.green; }
     }
 
     public void StartConnection()
@@ -141,13 +153,20 @@ public class Controller : MonoBehaviour
         if (nSeq % samplingRate == 0)
         {
             // Show the current package of data.
-            string outputString = "Acquired Data:\n";
+            string outputString = "";
+            float stringToInt;
+            float nseqFloat;
             for (int j = 0; j < data.Length; j++)
             {
                 outputString += data[j] + "\t";
             }
+            string[] x = outputString.Split('\t');
+            print(x[0]);
+            float.TryParse(x[0], out stringToInt);
+            print(stringToInt);
+            stringToInt /= 1000f;
             OutputMsgText.text = outputString;
-
+          // convert nseq if needed test  nseqFloat = (int)nSeq;
         }
     }
 
