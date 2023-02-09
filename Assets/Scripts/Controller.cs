@@ -1,8 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,10 +15,8 @@ public class Controller : MonoBehaviour
     public int samplingRate;
     public int resolution = 8;
     public Text OutputMsgText;
-   [SerializeField]public float floatData;
-    public Image Image;
-    public Image backdrop;
-    
+    public Slider SliderSlider;
+    public Image image;
     private int BitalinoPID = 1538;
     
     [System.NonSerialized]
@@ -27,24 +25,25 @@ public class Controller : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        OutputMsgText.text = "app started";
         StartConnection();
-        backdrop.color = Color.black;
+    }
+
+    private void Update()
+    {
+        print(SliderSlider.value);
+        if (SliderSlider.value >= 0.2f)
+        {
+            image.color = Color.red;
+        }
+        else { image.color = Color.green; }
     }
 
     public void StartConnection()
     {
-        OutputMsgText.text = "started connection";
-        // isues start here for the vr app
         PluxDevManager = new PluxDeviceManager(ScanResults, ConnectionDone, AcquisitionStarted, OnDataReceived, OnEventDetected, OnExceptionRaised);
-        OutputMsgText.text = "started connection1";
-
         int welcomeNumber = PluxDevManager.WelcomeFunctionUnity();
-        OutputMsgText.text = "started connection2";
-
         Debug.Log("Connection between C++ Interface and Unity established with success !\n");
         Debug.Log("Welcome Number: " + welcomeNumber);
-        OutputMsgText.text = "started connection3";
 
         // Initialization of Variables.       
         ActiveChannels = new List<int>();
@@ -60,28 +59,25 @@ public class Controller : MonoBehaviour
             print("connectionstatus " + connectionStatus);
             print("starting the acquisition");
             startACQ();
-            OutputMsgText.text = "connectiondone()";
-
         }
         else
         {
-            OutputMsgText.text = "connectionstatus " + connectionStatus;
+            print("connectionstatus " + connectionStatus);
         }
     }
     
     public void ConnectButtonFunction()
     {
+
         // Connect to the device selected in the Dropdown list.
         PluxDevManager.PluxDev("20:18:05:28:74:01");
-        OutputMsgText.text = "connect function";
-
     }
 
 
     // Method called when the "Scan for Devices" button is pressed.
     public void ScanFunction()
     {
-        OutputMsgText.text = "scan started";
+        print("scan started");
         // Search for PLUX devices
         PluxDevManager.GetDetectableDevicesUnity(domains);
         print("test devices" + domains);
@@ -106,8 +102,6 @@ public class Controller : MonoBehaviour
         {
             // Present an error message.
             print("kaput");
-            OutputMsgText.text = "kaput";
-
 
             // Securely stop the real-time acquisition.
             PluxDevManager.StopAcquisitionUnity(-1);
@@ -139,7 +133,6 @@ public class Controller : MonoBehaviour
 
         // Initializing the sources array.
         List<PluxDeviceManager.PluxSource> pluxSources = new List<PluxDeviceManager.PluxSource>();
-        OutputMsgText.text = "start acq";
 
         // BITalino (2 Analog sensors)
         if (PluxDevManager.GetProductIdUnity() == BitalinoPID)
@@ -161,26 +154,19 @@ public class Controller : MonoBehaviour
         {
             // Show the current package of data.
             string outputString = "";
+            float stringToInt;
+            float nseqFloat;
             for (int j = 0; j < data.Length; j++)
             {
                 outputString += data[j] + "\t";
             }
             string[] x = outputString.Split('\t');
+            print(x[0]);
+            float.TryParse(x[0], out stringToInt);
+            print(stringToInt);
+            stringToInt /= 1000f;
             OutputMsgText.text = outputString;
-            float.TryParse(x[0], out floatData);
-            
-        }
-    }
-
-    private void Update()
-    {
-        if (floatData >= 500f)
-        {
-            Image.color = Color.red;
-        }
-        else
-        {
-            Image.color = Color.green;
+          // convert nseq if needed test  nseqFloat = (int)nSeq;
         }
     }
 
@@ -193,13 +179,13 @@ public class Controller : MonoBehaviour
             print("Scan completed.\nNumber of devices found: " + listDevices.Count);
             
             //start connect
-            OutputMsgText.text = ("connecting.....");
+            print("connecting.....");
             ConnectButtonFunction();
         }
         else
         {
             // Show an informative message stating the none devices were found.
-            OutputMsgText.text = ("Bluetooth device scan didn't found any valid devices.");
+            print("Bluetooth device scan didn't found any valid devices.");
         }
     }
 }
